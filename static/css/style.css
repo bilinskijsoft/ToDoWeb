@@ -1,0 +1,13 @@
+.nav>li:hover {
+	    border-bottom: 5px solid white;
+		transition-duration: 0.5s;
+}
+
+.nav>li {
+	    border-bottom: 5px solid #222;
+	    border-top: 5px solid #222;
+}
+
+.navbar-brand {
+	padding: 20px 15px;
+}
