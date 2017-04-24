@@ -15,6 +15,33 @@ var users = []byte("users")
 var tokens = []byte("tokens")
 //var usersPass = []byte("usersPass")
 
+func getUserNameByToken(token string) string {
+	db, err := bolt.Open("database/bolt.db", 0644, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	user := ""
+
+	db.View(func(tx *bolt.Tx) error {
+		// Assume bucket exists and has keys
+		bucket := tx.Bucket([]byte("tokens"))
+
+		cursor := bucket.Cursor()
+
+		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
+			if (string(value) == token) {
+				user = string(key)
+			}
+		}
+
+		return nil
+	})
+
+	return user
+}
+
 func getUser(login string) sUser {
 
 	db, err := bolt.Open("database/bolt.db", 0644, nil)
@@ -27,7 +54,7 @@ func getUser(login string) sUser {
 	var userJson sUser
 	// retrieve the data
 	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(users)
+		bucket := tx.Bucket([]byte("users"))
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", users)
 		}
@@ -57,7 +84,7 @@ func createUser(login string, password string) {
 
 	// store some data
 	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(users)
+		bucket, err := tx.CreateBucketIfNotExists([]byte("users"))
 		if err != nil {
 			return err
 		}
@@ -93,7 +120,7 @@ func setUser(login string, id int, password string) {
 
 	// store some data
 	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(users)
+		bucket, err := tx.CreateBucketIfNotExists([]byte("Users"))
 		if err != nil {
 			return err
 		}
@@ -123,9 +150,9 @@ func getToken(login string) string {
 	var token string
 	// retrieve the data
 	err = db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket(tokens)
+		bucket := tx.Bucket([]byte("tokens"))
 		if bucket == nil {
-			return fmt.Errorf("Bucket %q not found!", tokens)
+			return fmt.Errorf("Bucket %q not found!", []byte("tokens"))
 		}
 
 		token = string(bucket.Get(key))
@@ -151,7 +178,7 @@ func createToken(login string) {
 
 	// store some data
 	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(tokens)
+		bucket, err := tx.CreateBucketIfNotExists([]byte("tokens"))
 		if err != nil {
 			return err
 		}

@@ -31,19 +31,19 @@
 
                     <ul class="nav navbar-nav navbar-right">
                         <li class="not_signed_in">
-                            <a href="#" data-toggle="modal" data-target="#myModal">Sign In</a>
+                            <a href="#" data-toggle="modal" data-target="#signIn">Sign In</a>
                         </li>
                         <li class="not_signed_in">
-                            <a href="#">Sign Up</a>
+                            <a href="#" data-toggle="modal" data-target="#signUp">Sign Up</a>
                         </li>
-                        <li class="signed_in">
+                        <li class="signed_in" style="display:none">
                             <a href="#">Add ToDo:</a>
                         </li>
-                        <li class="signed_in">
-                            <a href="#">$Name</a>
+                        <li class="signed_in" style="display:none">
+                            <a href="#" id="user_name">$Name</a>
                         </li>
-                        <li class="signed_in">
-                            <a href="#">Logout</a>
+                        <li class="signed_in" style="display:none">
+                            <a href="/logout/">Logout</a>
                         </li>
                         <li>
                             <a href="#"></a>
@@ -87,7 +87,7 @@
     </div>
 </div>
 
-<div class="modal fade in" id="myModal">
+<div class="modal fade in" id="signIn">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -107,6 +107,32 @@
             </div>
             <div class="modal-footer">
                 <input type="submit" class="btn btn-success" value="LOGIN">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="signUp">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal">×</button>
+                <h3>Register</h3>
+            </div>
+            <form method="POST" action="/register/">
+            <div class="modal-body">
+                    <div class="form-group">
+                        <label for="login">Login:</label>
+                        <input type="text" class="form-control" name="login">
+                    </div>
+                    <div class="form-group">
+                        <label for="pass">Password:</label>
+                        <input type="password" class="form-control" name="pass">
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <input type="submit" class="btn btn-success" value="REGISTER">
             </div>
             </form>
         </div>
