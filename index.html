@@ -31,19 +31,19 @@
 
                     <ul class="nav navbar-nav navbar-right">
                         <li class="not_signed_in">
-                            <a href="#" data-toggle="modal" data-target="#signIn">Sign In</a>
+                            <a href="#" data-toggle="modal" data-target="#signIn">Вход</a>
                         </li>
                         <li class="not_signed_in">
-                            <a href="#" data-toggle="modal" data-target="#signUp">Sign Up</a>
+                            <a href="#" data-toggle="modal" data-target="#signUp">Регистрация</a>
                         </li>
                         <li class="signed_in" style="display:none">
-                            <a href="#">Add ToDo:</a>
+                            <a href="#" data-toggle="modal" data-target="#addToDo">Добавить ToDo:</a>
                         </li>
                         <li class="signed_in" style="display:none">
                             <a href="#" id="user_name">$Name</a>
                         </li>
                         <li class="signed_in" style="display:none">
-                            <a href="/logout/">Logout</a>
+                            <a href="/logout/">Выход</a>
                         </li>
                         <li>
                             <a href="#"></a>
@@ -54,54 +54,35 @@
             </nav>
             </br></br></br></br>
             <div id="alerts">
-                <div class="alert alert-dismissable alert-success fade in">
-
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
-                        ×
-                    </button>
-                    <h4>
-                        Alert!
-                    </h4> <strong>Warning!</strong> Best check yo self, you're not looking too good. <a href="#" class="alert-link">alert link</a>
-                </div>
+                
             </div>
 
             <div id="todos">
-                <div class="jumbotron well">
-                    <h2>
-                        <div class="row">
-                            <div class="col-md-11 col-sm-10 col-xs-6">ToDo:</div>
-                            <div class="col-md-1 col-sm-2 col-xs-6"><h4>22.04.2017</h4></div>
-                        </div>
-                    </h2>
-                    <p>
-                        Here you will see your task!
-                    </p>
-                    <p>
-                        <a class="btn btn-default btn-large" href="#">Edit</a>
-                        <a class="btn btn-success btn-large" href="#">Done</a>
-                        <a class="btn btn-danger btn-large" href="#">Delete</a>
-                    </p>
-                </div>
+
+                
+
             </div>
         </div>
     </div>
 </div>
+
+<div id="modals">
 
 <div class="modal fade in" id="signIn">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button class="close" data-dismiss="modal">×</button>
-                <h3>Log in, please...</h3>
+                <h3>Войдите, пожалуйста...</h3>
             </div>
             <form method="POST" action="/login/">
             <div class="modal-body">
                     <div class="form-group">
-                        <label for="login">Login:</label>
+                        <label for="login">Логин:</label>
                         <input type="text" class="form-control" name="login">
                     </div>
                     <div class="form-group">
-                        <label for="pass">Password:</label>
+                        <label for="pass">Пароль:</label>
                         <input type="password" class="form-control" name="pass">
                     </div>
             </div>
@@ -118,16 +99,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button class="close" data-dismiss="modal">×</button>
-                <h3>Register</h3>
+                <h3>Регистрация</h3>
             </div>
             <form method="POST" action="/register/">
             <div class="modal-body">
                     <div class="form-group">
-                        <label for="login">Login:</label>
+                        <label for="login">Логин:</label>
                         <input type="text" class="form-control" name="login">
                     </div>
                     <div class="form-group">
-                        <label for="pass">Password:</label>
+                        <label for="pass">Пароль:</label>
                         <input type="password" class="form-control" name="pass">
                     </div>
             </div>
@@ -139,8 +120,94 @@
     </div>
 </div>
 
+<div class="modal fade in" id="addToDo">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal">×</button>
+                <h3>Добавить ToDo:</h3>
+            </div>
+            <form method="POST" action="/API/">
+            <input type="hidden" name="method" value="addToDo">
+            <input type="hidden" name="redirect" value="1">
+            <div class="modal-body">
+                    <div class="form-group">
+                      <label for="comment">Текст:</label>
+                      <textarea name="text" class="form-control" rows="5" id="comment"></textarea>
+                    </div>
+            </div>
+            <div class="modal-footer">
+                <input type="submit" class="btn btn-success" value="Add">
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script type="text/x-jquery-tmpl" id="todo_template">
+<div class="jumbotron well todo">
+    <h2>
+        <div class="row">
+            <div class="col-md-11 col-sm-10 col-xs-6">ToDo:</div>
+            <div class="col-md-1 col-sm-2 col-xs-6"><h4>${Date}</h4></div>
+        </div>
+    </h2>
+    <p>
+        ${Text}
+    </p>
+    <p>
+        <a class="btn btn-default btn-large" href="#" data-toggle="modal" data-target="#editToDo${Id}">Изменить</a>
+        <a class="btn btn-success btn-large" href="#" value=>Выполнено</a>
+        <a class="btn btn-danger btn-large" href="#" value=>Удалить</a>
+    </p>
+</div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="notify_template">
+    <div class="alert alert-dismissable alert-${Status} fade in">
+
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+            ×
+        </button>
+        <h4>
+            ${Title}
+        </h4> ${Text}</a>
+    </div>
+</script>
+
+<script type="text/x-jquery-tmpl" id="form_template">
+<div class="modal fade in" id="editToDo${Id}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal">×</button>
+                    <h3>Добавить ToDo:</h3>
+                </div>
+                <form method="POST" action="/API/">
+                <input type="hidden" id="editToDoId" name="id" value="0">
+
+                <div class="modal-body">
+                        <div class="form-group">
+                          <label for="comment">Текст:</label>
+                          <textarea name="text" class="form-control" rows="5" id="comment">${Text}</textarea>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-success" value="Add">
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</script>
+
+
 <script src="static/js/jquery.min.js"></script>
+<script src="static/js/jquery.tmpl.js"></script>
 <script src="static/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.js"></script>
 <script src="static/js/scripts.js"></script>
 </body>
 </html>

@@ -7,10 +7,8 @@ import (
 	"time"
 	"fmt"
 	"encoding/json"
-)
-
-var (
-	siteUrl = "http://127.0.0.1"
+	"strings"
+	"strconv"
 )
 
 type page struct {
@@ -23,27 +21,27 @@ type apiUserResponse struct {
 	Id int
 }
 
-type apiToDoResponse struct {
-	user string
-	text string
-	status int
+type apiNotifyStruct struct {
+	Title string
+	Text string
+	Status string
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html")
 
 
-	t, _ := template.ParseFiles("index.html")
+	t, _ := template.ParseFiles("static/index.html")
 	t.Execute(w, &page{Title: "Convert Image"})
 
 }
 
 func API(w http.ResponseWriter, r *http.Request) {
-	if (r.PostFormValue("method")=="getUser") {
+	switch method := r.PostFormValue("method"); method {
+	case "getUser":
 		cookie, err := r.Cookie("token")
 
 		if err != nil {
-			log.Println(err)
 			fmt.Fprintf(w, "{}")
 			return
 		}
@@ -51,8 +49,6 @@ func API(w http.ResponseWriter, r *http.Request) {
 		token := cookie.Value
 		if (getUserNameByToken(cookie.Value) != "") {
 			user := getUser(getUserNameByToken(token))
-
-			log.Println(getUserNameByToken(token))
 
 			response := apiUserResponse{getUserNameByToken(token), user.Id}
 
@@ -64,7 +60,105 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 			fmt.Fprintf(w, string(json))
 		}
-	} else {
+	case "getToDoS":
+		cookie, err := r.Cookie("token")
+
+		if err != nil {
+			fmt.Fprintf(w, "{}")
+			return
+		}
+
+		token := cookie.Value
+		if (getUserNameByToken(cookie.Value) != "") {
+
+
+			toDoS := getToDoS(getUserNameByToken(token))
+
+			json, err := json.MarshalIndent(toDoS,"todo_","todo")
+
+			if err != nil {
+				log.Println(err)
+			}
+
+			result := strings.Replace(string(json),"\\", "", -1)
+			result = strings.Trim(result,"\"")
+			fmt.Fprintf(w, result)
+		}
+	case "addToDo":
+		cookie, err := r.Cookie("token")
+
+		if err != nil {
+			fmt.Fprintf(w, "{}")
+			return
+		}
+
+		token := cookie.Value
+
+		text := r.PostFormValue("text")
+		user := getUserNameByToken(token)
+
+		addToDo(user,text)
+
+		log.Println("[INFO]: Added new todo. User:", user)
+
+		if (r.PostFormValue("redirect") == "1") {
+			http.Redirect(w, r, "http://" + r.Host,302)
+		}
+	case "getNotifys":
+		_, err := r.Cookie("token")
+
+		if err != nil {
+			response := apiNotifyStruct{"Привет!",
+						    "Для продолжения, пожалуйста войдите под своим логином, или зарегистрируйтесь!",
+						    "success"}
+
+			json, _ := json.Marshal(response)
+
+			fmt.Fprintf(w, string(json))
+			return
+		}
+		fmt.Fprintf(w, "{}")
+
+	case "editToDo":
+		_, err := r.Cookie("token")
+
+		if err != nil {
+			fmt.Fprintf(w, "{}")
+			return
+		}
+
+		id, _ := strconv.Atoi(r.PostFormValue("id"))
+		text := r.PostFormValue("text")
+		status, _ := strconv.Atoi(r.PostFormValue("status"))
+		editToDo(id,text,status)
+		http.Redirect(w, r, "http://" + r.Host,302)
+
+	case "getToDoById":
+		_, err := r.Cookie("token")
+
+		if err != nil {
+			fmt.Fprintf(w, "{}")
+			return
+		}
+
+		id, _ := strconv.Atoi(r.PostFormValue("id"))
+
+		fmt.Fprintf(w,getToDoById(id))
+
+	case "deleteToDoById":
+		_, err := r.Cookie("token")
+
+		if err != nil {
+			fmt.Fprintf(w, "{}")
+			return
+		}
+
+		id, _ := strconv.Atoi(r.PostFormValue("id"))
+
+		deleteToDo(id)
+		http.Redirect(w, r, "http://" + r.Host,302)
+
+	default:
 		fmt.Fprintf(w, "{}")
 	}
 }
@@ -85,22 +179,46 @@ func login(w http.ResponseWriter, r *http.Request) {
 		cookie := http.Cookie{Name: "token",Value: token ,Expires:expire,Path:"/"}
 
 		http.SetCookie(w,&cookie)
-		http.Redirect(w, r, siteUrl,302)
+		http.Redirect(w, r, "http://" + r.Host,302)
 
 		log.Println("[INFO]: Logged in user:", login)
 	}
 }
 
 func register(w http.ResponseWriter, r *http.Request) {
-	createUser(r.PostFormValue("login"),r.PostFormValue("pass"))
+	login := r.PostFormValue("login")
+	password := r.PostFormValue("pass")
+
+	createUser(login, password)
+
+	createToken(login)
+	token := getToken(login)
+
+	expire := time.Now().AddDate(0, 0, 1)
+	cookie := http.Cookie{Name: "token",Value: token ,Expires:expire,Path:"/"}
+
+	http.SetCookie(w,&cookie)
+	http.Redirect(w, r, "http://" + r.Host,302)
+
+	log.Println("[INFO]: Registered user:", login)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	expire := time.Now().Add(1 * time.Second)
-	cookie := http.Cookie{Name: "token",Value: "" ,Expires:expire,Path:"/"}
+	cookie, err := r.Cookie("token")
 
-	http.SetCookie(w,&cookie)
-	http.Redirect(w, r, siteUrl,302)
+	if err != nil {
+		fmt.Fprintf(w, "{}")
+		return
+	}
+
+
+	log.Println("[INFO]: Logged out user:", getUserNameByToken(cookie.Value))
+
+	expire := time.Now().Add(1 * time.Millisecond)
+	cookieUnset := http.Cookie{Name: "token",Value: "" ,Expires:expire,Path:"/"}
+
+	http.SetCookie(w,&cookieUnset)
+	http.Redirect(w, r, "http://" + r.Host,302)
 }
 
 func main() {
