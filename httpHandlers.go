@@ -168,7 +168,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	var user sUser
 	user = getUser(login)
 
-	if user.Password == password {
+	if user.Password == password && user.Password != "" && password != "" {
 		createToken(login)
 		token := getToken(login)
 
@@ -186,6 +186,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 func register(w http.ResponseWriter, r *http.Request) {
 	login := r.PostFormValue("login")
 	password := r.PostFormValue("pass")
+
+	if password == "" || login == "" {
+		fmt.Fprintf(w, "Не заполнены все поля!")
+		return
+	}
 
 	result := createUser(login, password)
 
