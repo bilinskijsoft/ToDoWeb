@@ -1,14 +1,14 @@
 package main
 
 import (
-	"time"
-	"net/http"
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
-	"fmt"
-	"encoding/json"
-	"strings"
+	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type page struct {
@@ -107,8 +107,8 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			response := apiNotifyStruct{"Привет!",
-						    "Для продолжения, пожалуйста войдите под своим логином, или зарегистрируйтесь!",
-						    "success"}
+				"Для продолжения, пожалуйста войдите под своим логином, или зарегистрируйтесь!",
+				"success"}
 
 			json, _ := json.Marshal(response)
 

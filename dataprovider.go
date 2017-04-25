@@ -1,26 +1,25 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/boltdb/bolt"
 	"log"
-	"fmt"
-	"encoding/json"
 	"time"
 )
 
 type sUser struct {
-	Id  int
+	Id       int
 	Password string
 }
 
 type toDo struct {
-	Id int
-	Text string
+	Id     int
+	Text   string
 	Status int
-	Date string
-	User string
+	Date   string
+	User   string
 }
-
 
 func getUserNameByToken(token string) string {
 	db, err := bolt.Open("database/bolt.db", 0644, nil)
@@ -111,7 +110,7 @@ func createUser(login string, password string) int {
 	}
 
 	var user sUser
-	user.Password=password
+	user.Password = password
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("users"))
@@ -120,7 +119,7 @@ func createUser(login string, password string) int {
 		}
 
 		id, err := bucket.NextSequence()
-		user.Id= int(id)
+		user.Id = int(id)
 
 		encoded, err := json.Marshal(user)
 
@@ -147,8 +146,8 @@ func setUser(login string, id int, password string) {
 
 	key := []byte(login)
 	var user sUser
-	user.Id=id
-	user.Password=password
+	user.Id = id
+	user.Password = password
 
 	// store some data
 	err = db.Update(func(tx *bolt.Tx) error {
@@ -273,14 +272,14 @@ func addToDo(login string, text string) {
 	}
 }
 
-func getToDoS(login string) string{
+func getToDoS(login string) string {
 	db, err := bolt.Open("database/bolt.db", 0644, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	ToDoS := make([]toDo,0)
+	ToDoS := make([]toDo, 0)
 
 	// retrieve the data
 	db.View(func(tx *bolt.Tx) error {
@@ -289,14 +288,13 @@ func getToDoS(login string) string{
 
 		cursor := bucket.Cursor()
 
-
 		var valueJson toDo
 
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
 			json.Unmarshal(value, &valueJson)
-			tmpToDoS :=make([]toDo,0)
+			tmpToDoS := make([]toDo, 0)
 			if valueJson.User == login {
-				tmpToDoS = append(tmpToDoS,valueJson)
+				tmpToDoS = append(tmpToDoS, valueJson)
 				ToDoS = append(tmpToDoS, ToDoS...)
 			}
 		}
@@ -304,13 +302,11 @@ func getToDoS(login string) string{
 		return nil
 	})
 
-	result, err:= json.Marshal(ToDoS)
+	result, err := json.Marshal(ToDoS)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-
 
 	return string(result)
 }
@@ -351,7 +347,6 @@ func editToDo(id int, text string, status int) {
 
 		id, err := bucket.NextSequence()
 
-
 		toDo.Status = status
 		if text != "" {
 			toDo.Text = text
@@ -372,7 +367,7 @@ func editToDo(id int, text string, status int) {
 	}
 }
 
-func getToDoById(id int) string{
+func getToDoById(id int) string {
 	db, err := bolt.Open("database/bolt.db", 0644, nil)
 	if err != nil {
 		log.Fatal(err)
