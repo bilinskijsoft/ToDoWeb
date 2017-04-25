@@ -38,7 +38,7 @@ func getUserNameByToken(token string) string {
 		cursor := bucket.Cursor()
 
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-			if (string(value) == token) {
+			if string(value) == token {
 				user = string(key)
 			}
 		}
@@ -78,7 +78,7 @@ func getUser(login string) sUser {
 	return userJson
 }
 
-func createUser(login string, password string) {
+func createUser(login string, password string) int {
 	db, err := bolt.Open("database/bolt.db", 0644, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -86,10 +86,33 @@ func createUser(login string, password string) {
 	defer db.Close()
 
 	key := []byte(login)
+
+	var userExist int = 0
+	// retrieve the data
+	err = db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte("users"))
+		if bucket == nil {
+			return fmt.Errorf("Bucket %q not found!", []byte("users"))
+		}
+
+		if bucket.Get(key) != nil {
+			userExist = 1
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if userExist == 1 {
+		return 0
+	}
+
 	var user sUser
 	user.Password=password
 
-	// store some data
 	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte("users"))
 		if err != nil {
@@ -111,6 +134,8 @@ func createUser(login string, password string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	return 1
 }
 
 func setUser(login string, id int, password string) {
@@ -270,7 +295,7 @@ func getToDoS(login string) string{
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
 			json.Unmarshal(value, &valueJson)
 			tmpToDoS :=make([]toDo,0)
-			if (valueJson.User == login) {
+			if valueJson.User == login {
 				tmpToDoS = append(tmpToDoS,valueJson)
 				ToDoS = append(tmpToDoS, ToDoS...)
 			}
@@ -308,7 +333,7 @@ func editToDo(id int, text string, status int) {
 		cursor := bucket.Cursor()
 
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-			if (string(key) == string(id)) {
+			if string(key) == string(id) {
 				json.Unmarshal(value, &toDo)
 				changeKey = key
 			}
@@ -328,7 +353,7 @@ func editToDo(id int, text string, status int) {
 
 
 		toDo.Status = status
-		if (text != "") {
+		if text != "" {
 			toDo.Text = text
 		}
 
@@ -363,7 +388,7 @@ func getToDoById(id int) string{
 		cursor := bucket.Cursor()
 
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-			if (string(key) == string(id)) {
+			if string(key) == string(id) {
 				toDo = string(value)
 			}
 		}
@@ -392,7 +417,7 @@ func deleteToDo(id int) {
 		cursor := bucket.Cursor()
 
 		for key, value := cursor.First(); key != nil; key, value = cursor.Next() {
-			if (string(key) == string(id)) {
+			if string(key) == string(id) {
 				json.Unmarshal(value, &toDo)
 				changeKey = key
 			}

@@ -87,19 +87,24 @@
                 <button class="close" data-dismiss="modal">×</button>
                 <h3>Войдите, пожалуйста...</h3>
             </div>
-            <form method="POST" action="/login/">
+            <form method="POST" action="/login/" id="login">
             <div class="modal-body">
                     <div class="form-group">
                         <label for="login">Логин:</label>
-                        <input type="text" class="form-control" name="login">
+                        <input id="login_login" type="text" class="form-control" name="login">
                     </div>
                     <div class="form-group">
                         <label for="pass">Пароль:</label>
-                        <input type="password" class="form-control" name="pass">
+                        <input id="login_pass" type="password" class="form-control" name="pass">
+                    </div>
+                <div class="form-group">
+                    <div class="alert alert-dismissable alert-danger fade in" id="login_alert" style="display:none">
+
+                    </div>
                     </div>
             </div>
             <div class="modal-footer">
-                <input type="submit" class="btn btn-success" value="Войти">
+                <input id="login_submit" type="button" class="btn btn-success" value="Войти">
             </div>
             </form>
         </div>
@@ -111,21 +116,26 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button class="close" data-dismiss="modal">×</button>
-                <h3>Регистрация</h3>
+                <h3>Регистрация...</h3>
             </div>
-            <form method="POST" action="/register/">
+            <form method="POST" action="/login/" id="login">
             <div class="modal-body">
                     <div class="form-group">
                         <label for="login">Логин:</label>
-                        <input type="text" class="form-control" name="login">
+                        <input id="register_login" type="text" class="form-control" name="login">
                     </div>
                     <div class="form-group">
                         <label for="pass">Пароль:</label>
-                        <input type="password" class="form-control" name="pass">
+                        <input id="register_pass" type="password" class="form-control" name="pass">
+                    </div>
+                <div class="form-group">
+                    <div class="alert alert-dismissable alert-danger fade in" id="register_alert" style="display:none">
+
+                    </div>
                     </div>
             </div>
             <div class="modal-footer">
-                <input type="submit" class="btn btn-success" value="Зарегистрироватся">
+                <input id="register_submit" type="button" class="btn btn-success" value="Зарегистрироватся">
             </div>
             </form>
         </div>
