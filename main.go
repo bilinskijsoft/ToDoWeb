@@ -5,12 +5,23 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", index)
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
-	http.HandleFunc("/API/", API)
-	http.HandleFunc("/login/", login)
-	http.HandleFunc("/register/", register)
-	http.HandleFunc("/logout/", logout)
+	finish := make(chan bool)
 
-	http.ListenAndServe(":80", nil)
+	server443 := http.NewServeMux()
+
+	server443.HandleFunc("/", index)
+	server443.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static/"))))
+	server443.HandleFunc("/API/", API)
+	server443.HandleFunc("/login/", login)
+	server443.HandleFunc("/register/", register)
+	server443.HandleFunc("/logout/", logout)
+
+	go http.ListenAndServeTLS(":443", "server.crt", "server.key", server443)
+
+	server80 := http.NewServeMux()
+	server80.HandleFunc("/", redirectToHttps)
+
+	go http.ListenAndServe(":80", server80)
+
+	<-finish
 }

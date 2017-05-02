@@ -100,7 +100,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		log.Println("[INFO]: Added new todo. User:", user)
 
 		if r.PostFormValue("redirect") == "1" {
-			http.Redirect(w, r, "http://"+r.Host, 302)
+			http.Redirect(w, r, "https://"+r.Host, 302)
 		}
 	case "getNotifys":
 		_, err := r.Cookie("token")
@@ -129,7 +129,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		text := r.PostFormValue("text")
 		status, _ := strconv.Atoi(r.PostFormValue("status"))
 		editToDo(id, text, status)
-		http.Redirect(w, r, "http://"+r.Host, 302)
+		http.Redirect(w, r, "https://"+r.Host, 302)
 
 	case "getToDoById":
 		_, err := r.Cookie("token")
@@ -154,11 +154,15 @@ func API(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(r.PostFormValue("id"))
 
 		deleteToDo(id)
-		http.Redirect(w, r, "http://"+r.Host, 302)
+		http.Redirect(w, r, "https://"+r.Host, 302)
 
 	default:
 		fmt.Fprintf(w, "{}")
 	}
+}
+
+func redirectToHttps(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://"+r.Host, 302)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -224,5 +228,5 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	cookieUnset := http.Cookie{Name: "token", Value: "", Expires: expire, Path: "/"}
 
 	http.SetCookie(w, &cookieUnset)
-	http.Redirect(w, r, "http://"+r.Host, 302)
+	http.Redirect(w, r, "https://"+r.Host, 302)
 }
