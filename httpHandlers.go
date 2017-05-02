@@ -154,7 +154,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(r.PostFormValue("id"))
 
 		deleteToDo(id)
-		http.Redirect(w, r, "https://"+r.Host, 302)
+		http.Redirect(w, r, "https://"+r.Host, 302) 
 
 	default:
 		fmt.Fprintf(w, "{}")
