@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -72,7 +73,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 			toDoS := getToDoS(getUserNameByToken(token))
 
-			json, err := json.MarshalIndent(toDoS, "todo_", "todo")
+			json, err := JSONMarshal(toDoS, true)
 
 			if err != nil {
 				log.Println(err)
@@ -80,6 +81,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 			result := strings.Replace(string(json), "\\", "", -1)
 			result = strings.Trim(result, "\"")
+
 			fmt.Fprintf(w, result)
 		}
 	case "addToDo":
@@ -94,6 +96,8 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 		text := r.PostFormValue("text")
 		user := getUserNameByToken(token)
+
+		text = strings.Replace(text, "\r\n", "<br>", -1)
 
 		addToDo(user, text)
 
@@ -154,7 +158,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(r.PostFormValue("id"))
 
 		deleteToDo(id)
-		http.Redirect(w, r, "https://"+r.Host, 302) 
+		http.Redirect(w, r, "https://"+r.Host, 302)
 
 	default:
 		fmt.Fprintf(w, "{}")
@@ -229,4 +233,15 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookieUnset)
 	http.Redirect(w, r, "https://"+r.Host, 302)
+}
+
+func JSONMarshal(v interface{}, safeEncoding bool) ([]byte, error) {
+	b, err := json.Marshal(v)
+
+	if safeEncoding {
+		b = bytes.Replace(b, []byte("\\u003c"), []byte("<"), -1)
+		b = bytes.Replace(b, []byte("\\u003e"), []byte(">"), -1)
+		b = bytes.Replace(b, []byte("\\u0026"), []byte("&"), -1)
+	}
+	return b, err
 }
