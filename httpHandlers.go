@@ -131,6 +131,7 @@ func API(w http.ResponseWriter, r *http.Request) {
 
 		id, _ := strconv.Atoi(r.PostFormValue("id"))
 		text := r.PostFormValue("text")
+		text = strings.Replace(text, "\r\n", "<br>", -1)
 		status, _ := strconv.Atoi(r.PostFormValue("status"))
 		editToDo(id, text, status)
 		http.Redirect(w, r, "https://"+r.Host, 302)
