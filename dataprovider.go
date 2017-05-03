@@ -345,8 +345,6 @@ func editToDo(id int, text string, status int) {
 			return err
 		}
 
-		id, err := bucket.NextSequence()
-
 		toDo.Status = status
 		if text != "" {
 			toDo.Text = text
@@ -355,7 +353,6 @@ func editToDo(id int, text string, status int) {
 		encoded, err := json.Marshal(toDo)
 
 		err = bucket.Put(changeKey, encoded)
-
 		if err != nil {
 			return err
 		}
