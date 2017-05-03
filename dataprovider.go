@@ -355,7 +355,7 @@ func editToDo(id int, text string, status int) {
 		encoded, err := json.Marshal(toDo)
 
 		err = bucket.Put(changeKey, encoded)
-		log.Println([]byte(string(id)))
+
 		if err != nil {
 			return err
 		}
